@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Absensi Pro | Ultra Luxury Edition</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Marcellus&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@400;700&display=swap');
+    
+    :root {
+      --primary: #020617;
+      --accent: #3B82F6;
+      --glass-bg: rgba(15, 23, 42, 0.65);
+      --border-light: rgba(255, 255, 255, 0.08);
+    }
+
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      background-color: #020617; 
+      color: #F8FAFC;
+      background-image: 
+        radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 35%),
+        radial-gradient(circle at 100% 100%, rgba(30, 64, 175, 0.1) 0%, transparent 35%),
+        radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .luxury-heading { 
+      font-family: 'Marcellus', serif;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+
+    .logo-font { font-family: 'Cinzel', serif; }
+
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(25px);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .premium-input {
+      background: rgba(2, 6, 23, 0.4);
+      border: 1px solid var(--border-light);
+      color: white;
+    }
+
+    .premium-input:focus {
+      border-color: var(--accent);
+      background: rgba(2, 6, 23, 0.8);
+      outline: none;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+    }
+
+    .rank-gold { border-left: 4px solid #FDE047; background: linear-gradient(90deg, rgba(253, 224, 71, 0.1) 0%, transparent 100%); }
+    .rank-silver { border-left: 4px solid #E2E8F0; background: linear-gradient(90deg, rgba(226, 232, 240, 0.1) 0%, transparent 100%); }
+    .rank-bronze { border-left: 4px solid #FB923C; background: linear-gradient(90deg, rgba(251, 146, 60, 0.1) 0%, transparent 100%); }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
+
+    .stat-number { font-variant-numeric: tabular-nums; }
+
+    /* ===== MOBILE / RESPONSIVE ===== */
+    html, body { -webkit-tap-highlight-color: transparent; }
+    input, select, textarea { font-size: 16px; } /* cegah zoom otomatis iOS */
+
+    .bottom-nav {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 50;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: rgba(2, 6, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border-light);
+    }
+
+    .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+
+    @media (max-width: 767px) {
+      .desktop-sidebar { display: none !important; }
+      .main-content { padding: 1rem !important; padding-bottom: 6.5rem !important; }
+      .luxury-heading { letter-spacing: 0.15em !important; }
+      h2.luxury-heading { font-size: 1.5rem !important; }
+      h2.text-4xl { font-size: 1.5rem !important; }
+      h2.text-6xl { font-size: 2rem !important; }
+      .grid-cols-12 { display: flex !important; flex-direction: column !important; }
+      .col-span-8, .col-span-4 { grid-column: unset !important; width: 100% !important; }
+      .grid-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      .grid-cols-2.gap-4 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+      .rounded-\[3rem\] { border-radius: 1.5rem !important; }
+      .rounded-\[2\.5rem\] { border-radius: 1.25rem !important; }
+      .p-12 { padding: 1rem !important; }
+      .p-10 { padding: 1.25rem !important; }
+      .gap-10 { gap: 1.25rem !important; }
+      .gap-12 { gap: 0.75rem !important; }
+      header.flex.justify-between { flex-direction: column !important; align-items: flex-start !important; gap: 0.75rem; }
+      .sticky.top-5 { position: relative !important; top: 0 !important; }
+    }
+
+    @media (min-width: 768px) {
+      .mobile-only { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+    
+    const motion = window.Motion ? window.Motion.motion : (window.framerMotion ? window.framerMotion.motion : {
+      div: 'div', button: 'button', nav: 'nav', span: 'span', p: 'p', section: 'section', h1: 'h1', h2: 'h2', h3: 'h3', h4: 'h4', input: 'input', select: 'select', svg: 'svg', path: 'path'
+    });
+    
+    const AnimatePresence = window.Motion ? window.Motion.AnimatePresence : (window.framerMotion ? window.framerMotion.AnimatePresence : ({children}) => <>{children}</>);
+
+    // ================== KONFIGURASI SUPABASE ==================
+    // Ganti dua nilai di bawah ini dengan URL & anon key project Supabase kamu.
+    // Project Settings -> API -> Project URL & anon public key
+    const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
+
+    const supabase = (SUPABASE_URL.includes("YOUR-PROJECT") || SUPABASE_ANON_KEY.includes("YOUR-ANON"))
+      ? null
+      : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /*
+      ================== SKEMA TABEL SUPABASE ==================
+      Jalankan SQL berikut di Supabase SQL Editor sebelum memakai aplikasi:
+
+      create table overtime_entries (
+        id text primary key,
+        name text not null,
+        date date not null,
+        cycle text not null,
+        shift text,
+        day_type text,
+        holiday_mode text,
+        manual_mult text,
+        start_time text,
+        end_time text,
+        work_tag text,
+        custom_work text,
+        work_label text,
+        total_hours numeric,
+        ot_hours numeric,
+        points numeric,
+        break_time numeric,
+        calc_label text,
+        created_at timestamptz default now()
+      );
+
+      create table attendance_entries (
+        id text primary key,
+        name text not null,
+        date date not null,
+        cycle text not null,
+        status text not null,
+        created_at timestamptz default now()
+      );
+
+      -- Aktifkan akses publik (karena app pakai password sederhana di frontend).
+      -- Untuk keamanan lebih baik, sesuaikan RLS sesuai kebutuhanmu nanti.
+      alter table overtime_entries enable row level security;
+      alter table attendance_entries enable row level security;
+
+      create policy "allow all overtime" on overtime_entries for all using (true) with check (true);
+      create policy "allow all attendance" on attendance_entries for all using (true) with check (true);
+    */
+
+    const EMPLOYEES = [
+      "Tomi A", "R Basuki", "Asep S", "Ubaidillah", "M Sidik", 
+      "Rohyat A", "Rizal R", "Agus K", "Jarwanto", "Afriadi", 
+      "Moskow", "Opa M", "Dede S", "Febrian", "Riky K", 
+      "Erlangga", "M Raka", "Zae Reen"
+    ];
+
+    const WORK_ITEMS = [
+      "Produksi", "Cleaning Outline", "Laporan", "Cleaning Dek Atas", 
+      "Cleaning NC", "Cleaning CV", "Gasleak", "Lainnya"
+    ];
+
+    // Logika Siklus Penggajian (Reset tanggal 16)
+    const getActiveCycle = (dateStr) => {
+      const date = new Date(dateStr);
+      const day = date.getDate();
+      const month = date.getMonth();
+      const year = date.getFullYear();
+      
+      if (day <= 15) {
+        return `${year}-${month + 1}`; 
+      } else {
+        return `${year}-${month + 2}`;
+      }
+    };
+
+    const calculateOvertime = (dateStr, start, end, shift, dayType, holidayMode, manualMult) => {
+      const dayIndex = new Date(dateStr).getDay();
+      const isFriday = dayIndex === 5;
+
+      const startDate = new Date(`2000-01-01T${start}:00`);
+      let endDate = new Date(`2000-01-01T${end}:00`);
+      if (endDate < startDate) endDate.setDate(endDate.getDate() + 1);
+
+      let diffHrs = (endDate - startDate) / (1000 * 60 * 60);
+      let breakHrs = 1.0; 
+      let normalWorkHrs = 8.0;
+      
+      if (shift === '1') {
+        if (isFriday) {
+            breakHrs = 80 / 60; 
+            const endHour = endDate.getHours();
+            if (endHour >= 19 || (endDate.getDate() > 1)) breakHrs = 105 / 60;
+        } else {
+            if (endDate.getHours() >= 19 || (endDate.getHours() < 7 && endDate.getDate() > 1)) breakHrs = 1.5;
+        }
+      } else if (shift === '2') {
+        const endHour = endDate.getHours();
+        const isNextDay = endDate.getDate() > 1;
+        if (isNextDay && (endHour === 6 || endHour === 7 || endHour === 8)) breakHrs = 1.5;
+      }
+
+      const totalActiveHrs = Math.max(0, diffHrs - breakHrs);
+      let points = 0;
+      let otHrs = 0;
+      let label = "";
+
+      if (dayType === 'libur') {
+        otHrs = totalActiveHrs;
+        if (holidayMode === 'regulasi') {
+          points += Math.min(totalActiveHrs, 8) * 2;
+          if (totalActiveHrs > 8) {
+            const extra1 = Math.min(totalActiveHrs - 8, 1);
+            points += extra1 * 3;
+            if (totalActiveHrs > 9) points += (totalActiveHrs - 9) * 4;
+          }
+          label = isFriday ? "Libur Jumat (Regulasi)" : "Libur (Regulasi)";
+        } else {
+          points = totalActiveHrs * parseFloat(manualMult);
+          label = `Libur (x${manualMult})`;
+        }
+      } else {
+        if (totalActiveHrs > normalWorkHrs) {
+          otHrs = totalActiveHrs - normalWorkHrs;
+          points += Math.min(otHrs, 1) * 1.5;
+          if (otHrs > 1) points += (otHrs - 1) * 2.0;
+          label = isFriday ? "Lembur Jumat" : "Lembur";
+        } else {
+          label = isFriday ? "Reguler Jumat" : "Reguler";
+        }
+      }
+
+      return { 
+        hours: totalActiveHrs.toFixed(2), 
+        otHours: otHrs.toFixed(2),
+        points: points.toFixed(2), 
+        breakTime: (breakHrs * 60).toFixed(0),
+        calcLabel: label
+      };
+    };
+
+    // Mapping kolom Supabase (snake_case) <-> state React (camelCase)
+    const otToRow = (e) => ({
+      id: e.id, name: e.name, date: e.date, cycle: getActiveCycle(e.date),
+      shift: e.shift, day_type: e.dayType, holiday_mode: e.holidayMode, manual_mult: e.manualMult,
+      start_time: e.start, end_time: e.end, work_tag: e.workTag, custom_work: e.customWork,
+      work_label: e.workLabel, total_hours: e.totalHours, ot_hours: e.otHours,
+      points: e.points, break_time: e.breakTime, calc_label: e.calcLabel
+    });
+    const otFromRow = (r) => ({
+      id: r.id, name: r.name, date: r.date, shift: r.shift, dayType: r.day_type,
+      holidayMode: r.holiday_mode, manualMult: r.manual_mult, start: r.start_time, end: r.end_time,
+      workTag: r.work_tag, customWork: r.custom_work, workLabel: r.work_label,
+      totalHours: r.total_hours, otHours: r.ot_hours, points: r.points,
+      breakTime: r.break_time, calcLabel: r.calc_label
+    });
+    const attToRow = (e) => ({ id: e.id, name: e.name, date: e.date, cycle: getActiveCycle(e.date), status: e.status });
+    const attFromRow = (r) => ({ id: r.id, name: r.name, date: r.date, status: r.status });
+
+    const App = () => {
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+      const [password, setPassword] = useState("");
+      const [page, setPage] = useState('lembur');
+      const [overtimeData, setOvertimeData] = useState([]);
+      const [attendanceData, setAttendanceData] = useState([]);
+      const [currentDate] = useState(new Date().toISOString().split('T')[0]);
+      const [loading, setLoading] = useState(false);
+      const [dbError, setDbError] = useState(null);
+
+      const loadFromSupabase = async () => {
+        if (!supabase) { setDbError("Supabase belum dikonfigurasi. Isi SUPABASE_URL & SUPABASE_ANON_KEY di kode."); return; }
+        setLoading(true);
+        setDbError(null);
+        try {
+          const [{ data: ot, error: otErr }, { data: att, error: attErr }] = await Promise.all([
+            supabase.from('overtime_entries').select('*').order('created_at', { ascending: false }),
+            supabase.from('attendance_entries').select('*').order('created_at', { ascending: false }),
+          ]);
+          if (otErr) throw otErr;
+          if (attErr) throw attErr;
+          setOvertimeData((ot || []).map(otFromRow));
+          setAttendanceData((att || []).map(attFromRow));
+        } catch (e) {
+          console.error(e);
+          setDbError("Gagal memuat data dari Supabase: " + e.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        if (isLoggedIn) loadFromSupabase();
+      }, [isLoggedIn]);
+
+      const handleLogin = () => {
+        if (password === "123456789") setIsLoggedIn(true);
+      };
+
+      // Simpan entri baru (satu atau banyak) ke Supabase, lalu update state lokal
+      const saveOvertime = async (entries) => {
+        setOvertimeData(prev => [...entries, ...prev]);
+        if (!supabase) return;
+        const { error } = await supabase.from('overtime_entries').insert(entries.map(otToRow));
+        if (error) { console.error(error); setDbError("Gagal menyimpan lembur: " + error.message); }
+      };
+
+      const deleteOvertime = async (id) => {
+        setOvertimeData(prev => prev.filter(d => d.id !== id));
+        if (!supabase) return;
+        const { error } = await supabase.from('overtime_entries').delete().eq('id', id);
+        if (error) { console.error(error); setDbError("Gagal menghapus lembur: " + error.message); }
+      };
+
+      const saveAttendance = async (entry) => {
+        setAttendanceData(prev => [...prev, entry]);
+        if (!supabase) return;
+        const { error } = await supabase.from('attendance_entries').insert([attToRow(entry)]);
+        if (error) { console.error(error); setDbError("Gagal menyimpan presensi: " + error.message); }
+      };
+
+      const deleteAttendance = async (id) => {
+        setAttendanceData(prev => prev.filter(d => d.id !== id));
+        if (!supabase) return;
+        const { error } = await supabase.from('attendance_entries').delete().eq('id', id);
+        if (error) { console.error(error); setDbError("Gagal menghapus presensi: " + error.message); }
+      };
+
+      const activeCycleID = useMemo(() => getActiveCycle(currentDate), [currentDate]);
+      
+      const filteredOvertime = useMemo(() => {
+        return overtimeData.filter(d => getActiveCycle(d.date) === activeCycleID);
+      }, [overtimeData, activeCycleID]);
+
+      if (!isLoggedIn) {
+        return (
+          <div className="h-screen w-full flex items-center justify-center bg-[#020617] px-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full glass-card p-8 sm:p-12 rounded-[2.5rem] sm:rounded-[3.5rem] text-center border-white/5">
+              <div className="mb-8 flex justify-center">
+                <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center logo-font font-bold text-white text-4xl shadow-2xl">E</div>
+              </div>
+              <h1 className="logo-font text-3xl text-white font-bold mb-2">Absensi Pro</h1>
+              {!supabase && (
+                <p className="text-amber-400 text-[9px] font-bold uppercase tracking-wider mb-6 leading-relaxed">
+                  Supabase belum dikonfigurasi. Isi SUPABASE_URL & SUPABASE_ANON_KEY di kode agar data tersimpan permanen.
+                </p>
+              )}
+              {supabase && <div className="mb-8"></div>}
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder="Password" className="w-full premium-input p-5 rounded-2xl text-center font-black tracking-widest mb-6" />
+              <button onClick={handleLogin} className="w-full btn-action text-white py-5 rounded-2xl text-[10px] uppercase font-black tracking-widest">Masuk</button>
+            </motion.div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex h-screen overflow-hidden bg-[#020617]">
+          <nav className="desktop-sidebar w-72 bg-slate-950/40 border-r border-white/5 flex-col py-10 px-8 relative z-20 hidden md:flex">
+            <div className="mb-16 flex items-center gap-4 px-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center logo-font font-bold text-white text-sm">E</div>
+              <h1 className="logo-font text-sm text-white font-bold">Absensi Pro</h1>
+            </div>
+            <div className="space-y-3 flex-1">
+              <NavItem active={page === 'lembur'} onClick={() => setPage('lembur')} label="Lembur" icon="⚡" />
+              <NavItem active={page === 'presensi'} onClick={() => setPage('presensi')} label="Presensi" icon="📍" />
+              <NavItem active={page === 'archive'} onClick={() => setPage('archive')} label="Arsip" icon="📂" />
+              <NavItem active={page === 'ranking'} onClick={() => setPage('ranking')} label="Peringkat" icon="🏆" />
+            </div>
+            <button onClick={() => { setIsLoggedIn(false); setPassword(""); }} className="text-slate-600 hover:text-rose-500 text-[8px] font-black uppercase tracking-widest p-4">Sign Out</button>
+          </nav>
+
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Header mobile */}
+            <div className="mobile-only safe-top flex items-center justify-between px-5 py-4 border-b border-white/5 bg-slate-950/40 z-20">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center logo-font font-bold text-white text-xs">E</div>
+                <h1 className="logo-font text-xs text-white font-bold">Absensi Pro</h1>
+              </div>
+              <button onClick={() => { setIsLoggedIn(false); setPassword(""); }} className="text-slate-600 text-[8px] font-black uppercase tracking-widest">Keluar</button>
+            </div>
+
+            {dbError && (
+              <div className="mx-4 md:mx-12 mt-3 md:mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-wide">
+                {dbError}
+              </div>
+            )}
+            {loading && (
+              <div className="mx-4 md:mx-12 mt-3 md:mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-bold uppercase tracking-wide">
+                Memuat data dari Supabase...
+              </div>
+            )}
+
+            <main className="main-content flex-1 overflow-y-auto p-4 md:p-12 custom-scrollbar">
+              <AnimatePresence mode="wait">
+                <motion.div key={page} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
+                  {page === 'lembur' && <LemburModule data={overtimeData} attendanceData={attendanceData} onSave={saveOvertime} onDelete={deleteOvertime} activeCycleID={activeCycleID} />}
+                  {page === 'presensi' && <PresensiModule data={attendanceData} onSave={saveAttendance} onDelete={deleteAttendance} activeCycleID={activeCycleID} />}
+                  {page === 'archive' && <ArchiveModule data={overtimeData} attendanceData={attendanceData} onDeleteOT={deleteOvertime} onDeleteAtt={deleteAttendance} />}
+                  {page === 'ranking' && <RankingModule data={filteredOvertime} />}
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+
+          {/* Bottom nav mobile */}
+          <nav className="bottom-nav mobile-only grid grid-cols-4">
+            <BottomNavItem active={page === 'lembur'} onClick={() => setPage('lembur')} label="Lembur" icon="⚡" />
+            <BottomNavItem active={page === 'presensi'} onClick={() => setPage('presensi')} label="Presensi" icon="📍" />
+            <BottomNavItem active={page === 'archive'} onClick={() => setPage('archive')} label="Arsip" icon="📂" />
+            <BottomNavItem active={page === 'ranking'} onClick={() => setPage('ranking')} label="Rank" icon="🏆" />
+          </nav>
+        </div>
+      );
+    };
+
+    const BottomNavItem = ({ active, onClick, label, icon }) => (
+      <button onClick={onClick} className={`flex flex-col items-center justify-center gap-1 py-3 transition-all ${active ? 'text-blue-400' : 'text-slate-600'}`}>
+        <span className="text-lg">{icon}</span>
+        <span className="font-bold text-[8px] uppercase tracking-widest">{label}</span>
+      </button>
+    );
+
+    const NavItem = ({ active, onClick, label, icon }) => (
+      <button onClick={onClick} className={`w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all border ${active ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' : 'text-slate-500 border-transparent hover:text-white'}`}>
+        <span className="text-lg">{icon}</span>
+        <span className="font-bold text-[9px] uppercase tracking-widest">{label}</span>
+      </button>
+    );
+
+    const LemburModule = ({ data, attendanceData, onSave, onDelete, activeCycleID }) => {
+      const [form, setForm] = useState({ 
+        date: new Date().toISOString().split('T')[0], 
+        shift: '1', dayType: 'biasa', holidayMode: 'regulasi', manualMult: '2',
+        start: '07:00', end: '16:00', workTag: "Produksi", customWork: "" 
+      });
+      const [selected, setSelected] = useState([]);
+      const isFriday = useMemo(() => new Date(form.date).getDay() === 5, [form.date]);
+
+      useEffect(() => {
+        if (form.shift === '1') setForm(prev => ({ ...prev, end: isFriday ? '16:20' : '16:00' }));
+      }, [isFriday, form.shift]);
+
+      const available = EMPLOYEES.filter(name => {
+        const alreadyIn = data.some(d => d.date === form.date && d.name === name);
+        const absent = attendanceData.find(att => att.date === form.date && att.name === name);
+        return !alreadyIn && !(absent && ["Izin", "Sakit", "Cuti"].includes(absent.status));
+      });
+
+      const handleSave = () => {
+        if (!selected.length) return;
+        const calc = calculateOvertime(form.date, form.start, form.end, form.shift, form.dayType, form.holidayMode, form.manualMult);
+        const workLabel = form.workTag === "Lainnya" ? (form.customWork || "Lainnya") : form.workTag;
+        
+        const newEntries = selected.map(name => ({
+          id: `OT-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          name, ...form, workLabel, totalHours: calc.hours, otHours: calc.otHours,
+          points: calc.points, breakTime: calc.breakTime, calcLabel: calc.calcLabel,
+          createdAt: new Date().getTime()
+        }));
+        onSave(newEntries);
+        setSelected([]);
+        setForm(prev => ({ ...prev, customWork: "" }));
+      };
+
+      const todayLogs = data.filter(d => d.date === form.date).reverse();
+
+      return (
+        <div className="max-w-6xl mx-auto space-y-6 md:space-y-12">
+          <header className="border-b border-white/5 pb-5 md:pb-8 flex justify-between items-end">
+            <div>
+              <h2 className="luxury-heading text-2xl md:text-4xl text-white font-light tracking-[0.2em] md:tracking-[0.4em]">Shift & Lembur</h2>
+              <p className="text-blue-500 text-[9px] md:text-[10px] font-bold uppercase mt-2 tracking-widest italic">Siklus Berjalan: {activeCycleID}</p>
+            </div>
+          </header>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10">
+            <div className="md:col-span-8 space-y-6 md:space-y-10">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                {available.map(name => (
+                  <button key={name} onClick={() => setSelected(s => s.includes(name) ? s.filter(n => n !== name) : [...s, name])} className={`p-4 md:p-6 rounded-2xl md:rounded-[2rem] text-left glass-card border transition-all ${selected.includes(name) ? 'border-blue-500 bg-blue-500/5' : 'border-white/5'}`}>
+                    <p className={`font-bold italic text-sm md:text-lg transition-colors ${selected.includes(name) ? 'text-white' : 'text-slate-500'}`}>{name}</p>
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-3">
+                <p className="text-[8px] font-black uppercase text-slate-600 tracking-[0.3em]">Log Hari Ini ({todayLogs.length})</p>
+                {todayLogs.map(item => (
+                  <div key={item.id} className="glass-card p-5 rounded-2xl flex justify-between items-center border-white/5 group">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-white italic text-base">{item.name}</span>
+                      <span className="text-[8px] text-slate-500 uppercase font-black">{item.workLabel}</span>
+                    </div>
+                    <div className="flex gap-8 items-center">
+                      <div className="text-center"><p className="text-[7px] text-slate-600 uppercase font-black">Lembur</p><p className="text-emerald-400 font-bold text-xs">{item.otHours}j</p></div>
+                      <div className="text-center"><p className="text-[7px] text-slate-600 uppercase font-black">Poin</p><p className="text-amber-500 font-bold text-xs">{item.points}</p></div>
+                      <button onClick={() => onDelete(item.id)} className="text-rose-500 opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-rose-500/10 rounded-lg">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="md:col-span-4 space-y-6">
+              <div className="glass-card p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] space-y-5 md:space-y-6">
+                <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full premium-input p-4 rounded-xl text-xs font-bold" />
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <ToggleButton active={form.shift==='1'} onClick={() => setForm({...form, shift:'1', start:'07:00'})} label="SHIFT 1" />
+                  <ToggleButton active={form.shift==='2'} onClick={() => setForm({...form, shift:'2', start:'19:00', end:'04:00'})} label="SHIFT 2" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[7px] text-slate-600 font-black uppercase ml-2">Mulai</p>
+                    <input type="time" value={form.start} onChange={e => setForm({...form, start: e.target.value})} className="w-full premium-input p-3 rounded-xl text-center text-xs font-bold" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[7px] text-slate-600 font-black uppercase ml-2">Selesai</p>
+                    <input type="time" value={form.end} onChange={e => setForm({...form, end: e.target.value})} className="w-full premium-input p-3 rounded-xl text-center text-xs font-bold" />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                    <p className="text-[7px] text-slate-600 font-black uppercase ml-2">Pekerjaan</p>
+                    <select value={form.workTag} onChange={e => setForm({...form, workTag: e.target.value})} className="w-full premium-input p-4 rounded-xl text-xs font-bold outline-none">
+                        {WORK_ITEMS.map(w => <option key={w} value={w}>{w}</option>)}
+                    </select>
+                </div>
+
+                {form.workTag === "Lainnya" && (
+                    <input type="text" placeholder="Detail Pekerjaan..." value={form.customWork} onChange={e => setForm({...form, customWork: e.target.value})} className="w-full premium-input p-4 rounded-xl text-xs font-bold" />
+                )}
+
+                <div className="space-y-3 pt-4 border-t border-white/5">
+                    <div className="grid grid-cols-2 gap-2">
+                        <ToggleButton active={form.dayType==='biasa'} onClick={() => setForm({...form, dayType:'biasa'})} label="REGULER" />
+                        <ToggleButton active={form.dayType==='libur'} onClick={() => setForm({...form, dayType:'libur'})} label="LIBUR" />
+                    </div>
+
+                    {form.dayType === 'libur' && (
+                        <div className="space-y-2 bg-slate-900/30 p-4 rounded-2xl border border-white/5">
+                            <div className="flex gap-2">
+                                <ToggleButton active={form.holidayMode === 'regulasi'} onClick={() => setForm({...form, holidayMode: 'regulasi'})} label="OTOMATIS" />
+                                <ToggleButton active={form.holidayMode === 'manual'} onClick={() => setForm({...form, holidayMode: 'manual'})} label="CUSTOM" />
+                            </div>
+                            {form.holidayMode === 'manual' && (
+                                <div className="flex items-center gap-3 mt-2">
+                                    <span className="text-[8px] text-slate-500 font-black">X</span>
+                                    <input type="number" step="0.1" value={form.manualMult} onChange={e => setForm({...form, manualMult: e.target.value})} className="flex-1 premium-input p-2 rounded-lg text-center text-xs font-bold" />
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <button onClick={handleSave} disabled={!selected.length} className="w-full btn-action py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-white disabled:opacity-20 transition-all">Submit ({selected.length})</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const PresensiModule = ({ data, onSave, onDelete, activeCycleID }) => {
+      const [form, setForm] = useState({ name: "", status: "Hadir", date: new Date().toISOString().split('T')[0] });
+      
+      const todayAttendance = useMemo(() => {
+        return data.filter(d => d.date === form.date).reverse();
+      }, [data, form.date]);
+
+      const handleSave = () => {
+        if (!form.name) return;
+        const exists = data.some(d => d.date === form.date && d.name === form.name);
+        if (exists) return;
+
+        const entry = { ...form, id: `ATT-${Date.now()}` };
+        onSave(entry);
+        setForm({...form, name: ""});
+      };
+
+      return (
+        <div className="max-w-6xl mx-auto space-y-6 md:space-y-12">
+           <header className="border-b border-white/5 pb-5 md:pb-8 flex justify-between items-end">
+            <h2 className="luxury-heading text-2xl md:text-4xl text-white font-light tracking-[0.2em] md:tracking-[0.4em]">Presensi Harian</h2>
+            <p className="text-slate-500 text-[9px] md:text-[10px] font-bold uppercase tracking-widest italic">Siklus: {activeCycleID}</p>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10">
+            <div className="md:col-span-4">
+              <div className="glass-card p-5 md:p-10 rounded-2xl md:rounded-[3rem] space-y-6 md:space-y-8">
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-[7px] text-slate-600 font-black uppercase ml-2">Tanggal Absen</p>
+                    <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full premium-input p-5 rounded-2xl font-bold text-xs" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[7px] text-slate-600 font-black uppercase ml-2">Pilih Personel</p>
+                    <select value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full premium-input p-5 rounded-2xl font-bold text-xs outline-none">
+                      <option value="">-- Pilih Nama --</option>
+                      {EMPLOYEES.map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-[7px] text-slate-600 font-black uppercase ml-2">Status Kehadiran</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Hadir', 'Izin', 'Sakit', 'Cuti'].map(s => (
+                      <button key={s} onClick={() => setForm({...form, status: s})} className={`py-4 rounded-xl font-bold text-[9px] uppercase tracking-widest border transition-all ${form.status === s ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-slate-900/50 border-white/5 text-slate-600'}`}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <button onClick={handleSave} disabled={!form.name} className="w-full btn-action py-5 rounded-2xl font-black text-[10px] text-white uppercase tracking-[0.2em] disabled:opacity-30">Simpan Absensi</button>
+              </div>
+            </div>
+
+            <div className="md:col-span-8 space-y-4 md:space-y-6">
+               <p className="text-[8px] font-black uppercase text-slate-600 tracking-[0.3em]">Absensi Tanggal {form.date} ({todayAttendance.length})</p>
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                  {todayAttendance.map(item => (
+                    <div key={item.id} className="glass-card p-5 md:p-6 rounded-2xl flex justify-between items-center group border-white/5">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-white italic text-base md:text-lg leading-none">{item.name}</span>
+                        <span className={`text-[8px] font-black uppercase mt-1 ${item.status === 'Hadir' ? 'text-emerald-500' : 'text-rose-500'}`}>{item.status}</span>
+                      </div>
+                      <button onClick={() => onDelete(item.id)} className="text-rose-500 opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-rose-500/10 rounded-lg">✕</button>
+                    </div>
+                  ))}
+               </div>
+               {todayAttendance.length === 0 && (
+                 <div className="h-40 flex items-center justify-center border border-dashed border-white/5 rounded-3xl">
+                   <p className="text-slate-700 text-[10px] uppercase font-black tracking-widest">Belum ada absensi untuk tanggal ini</p>
+                 </div>
+               )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Format label periode "2026-8" -> "16 Jul – 15 Agu 2026"
+    const MONTH_NAMES = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+    const cycleLabel = (cycleID) => {
+      const [year, monthNum] = cycleID.split('-').map(Number);
+      // cycleID month = bulan akhir periode (misal periode 16 Jul-15 Agu -> disimpan sbg 2026-8)
+      let endMonthIdx = monthNum - 1;
+      let endYear = year;
+      let startMonthIdx = endMonthIdx - 1;
+      let startYear = endYear;
+      if (startMonthIdx < 0) { startMonthIdx = 11; startYear -= 1; }
+      return `16 ${MONTH_NAMES[startMonthIdx]} – 15 ${MONTH_NAMES[endMonthIdx]} ${endYear}`;
+    };
+
+    const ArchiveModule = ({ data, attendanceData, onDeleteOT, onDeleteAtt }) => {
+      const [view, setView] = useState('ot');
+      const [filterCycle, setFilterCycle] = useState('current');
+
+      const currentCycleID = useMemo(() => getActiveCycle(new Date().toISOString().split('T')[0]), []);
+
+      const allCycles = useMemo(() => {
+          const cycles = new Set();
+          data.forEach(d => cycles.add(getActiveCycle(d.date)));
+          attendanceData.forEach(d => cycles.add(getActiveCycle(d.date)));
+          return Array.from(cycles).sort().reverse();
+      }, [data, attendanceData]);
+
+      const effectiveCycle = filterCycle === 'current' ? currentCycleID : filterCycle;
+
+      const displayData = useMemo(() => {
+          let list = view === 'ot' ? data : attendanceData;
+          if (filterCycle !== 'all') {
+              list = list.filter(d => getActiveCycle(d.date) === effectiveCycle);
+          }
+          return [...list].sort((a,b) => new Date(b.date) - new Date(a.date));
+      }, [view, filterCycle, effectiveCycle, data, attendanceData]);
+
+      return (
+        <div className="max-w-5xl mx-auto space-y-6 md:space-y-10">
+           <header className="border-b border-white/5 pb-5 md:pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div>
+                <h2 className="luxury-heading text-2xl md:text-4xl text-white font-light tracking-[0.2em] md:tracking-[0.4em]">Arsip Data</h2>
+                <p className="text-slate-500 text-[9px] md:text-[10px] font-bold uppercase mt-2 tracking-widest italic">Rekaman permanen tiap periode 16 – 15</p>
+            </div>
+            <div className="flex flex-col gap-1 w-full md:w-auto">
+                <span className="text-[7px] font-black text-slate-700 uppercase tracking-widest">Filter Periode:</span>
+                <select value={filterCycle} onChange={e => setFilterCycle(e.target.value)} className="premium-input px-5 md:px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none border-blue-500/20 w-full md:w-auto">
+                    <option value="all">Semua Periode</option>
+                    <option value="current">Periode Berjalan ({cycleLabel(currentCycleID)})</option>
+                    {allCycles.map(c => <option key={c} value={c}>{cycleLabel(c)}</option>)}
+                </select>
+            </div>
+          </header>
+
+          <div className="flex gap-3 md:gap-4 border-b border-white/5 pb-5 md:pb-6 overflow-x-auto">
+            <button onClick={() => setView('ot')} className={`px-6 md:px-10 py-3 md:py-4 rounded-xl font-black text-[8px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all border whitespace-nowrap ${view === 'ot' ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-transparent border-transparent text-slate-600 hover:text-white'}`}>Data Lembur</button>
+            <button onClick={() => setView('att')} className={`px-6 md:px-10 py-3 md:py-4 rounded-xl font-black text-[8px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all border whitespace-nowrap ${view === 'att' ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-transparent border-transparent text-slate-600 hover:text-white'}`}>Data Presensi</button>
+          </div>
+          
+          <div className="space-y-3">
+            {displayData.map(item => (
+              <div key={item.id} className="glass-card p-4 md:p-6 rounded-2xl flex flex-col sm:flex-row justify-between sm:items-center gap-4 group hover:border-white/20 transition-all">
+                <div className="flex gap-5 md:gap-10 items-center">
+                  <div className="flex flex-col text-center border-r border-white/5 pr-4 md:pr-8 min-w-[80px] md:min-w-[100px]">
+                    <span className="text-[9px] md:text-[10px] font-black text-white italic">{item.date}</span>
+                    <span className="text-[6px] md:text-[7px] text-blue-500 font-black uppercase mt-1">{cycleLabel(getActiveCycle(item.date))}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-white italic text-base md:text-lg leading-none">{item.name}</span>
+                    {view === 'ot' && <span className="text-[8px] text-slate-500 uppercase font-black mt-1">{item.workLabel}</span>}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6 md:gap-12">
+                    {view === 'ot' ? (
+                        <div className="flex gap-6 md:gap-12 text-center items-center">
+                            <StatMini label="Istirahat" value={`${item.breakTime}m`} color="text-slate-500" />
+                            <StatMini label="Lembur" value={`${item.otHours}j`} color="text-emerald-400" />
+                            <StatMini label="Poin" value={item.points} color="text-amber-500" />
+                            <button onClick={() => onDeleteOT(item.id)} className="text-rose-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 ml-2 md:ml-4 transition-all">✕</button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-4 md:gap-8">
+                            <span className={`text-[9px] font-black uppercase px-4 py-1 rounded-full border ${item.status === 'Hadir' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5' : 'text-rose-500 border-rose-500/20 bg-rose-500/5'}`}>{item.status}</span>
+                            <button onClick={() => onDeleteAtt(item.id)} className="text-rose-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">✕</button>
+                        </div>
+                    )}
+                </div>
+              </div>
+            ))}
+
+            {displayData.length === 0 && (
+                <div className="py-20 text-center opacity-20">
+                    <p className="luxury-heading text-xl">Arsip Kosong</p>
+                    <p className="text-[8px] font-black uppercase mt-4">Belum ada data terekam untuk kriteria ini</p>
+                </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const RankingModule = ({ data }) => {
+      const stats = useMemo(() => {
+        const counts = {};
+        EMPLOYEES.forEach(n => counts[n] = 0);
+        data.forEach(w => { if(counts[w.name] !== undefined) counts[w.name] += Number(w.points || 0); });
+        return Object.entries(counts).sort((a,b) => b[1] - a[1]);
+      }, [data]);
+
+      return (
+        <div className="max-w-4xl mx-auto py-2 md:py-6">
+          <h2 className="luxury-heading text-3xl md:text-6xl text-white font-light text-center mb-10 md:mb-20 tracking-[0.25em] md:tracking-[0.5em]">The Elite</h2>
+          <div className="space-y-3 md:space-y-5">
+            {stats.map(([name, pts], i) => {
+              const isTop3 = i < 3;
+              const rankClass = i === 0 ? 'rank-gold' : i === 1 ? 'rank-silver' : i === 2 ? 'rank-bronze' : '';
+              const medalIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+
+              return (
+                <div key={name} className={`p-4 md:p-10 rounded-2xl md:rounded-[3rem] flex justify-between items-center glass-card border-white/5 transition-transform hover:scale-[1.01] ${rankClass}`}>
+                  <div className="flex items-center gap-4 md:gap-12 min-w-0">
+                    <span className={`text-xl md:text-4xl font-black italic w-8 md:w-14 shrink-0 ${isTop3 ? 'text-white' : 'text-slate-800'}`}>{medalIcon}</span>
+                    <div className="min-w-0">
+                      <span className={`font-bold italic text-base md:text-2xl truncate block ${isTop3 ? 'text-white tracking-widest' : 'text-slate-400'}`}>{name}</span>
+                      {isTop3 && <p className="text-[6px] md:text-[7px] font-black text-blue-500 uppercase tracking-[0.2em] md:tracking-[0.4em] mt-1">Outstanding Performance</p>}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 pl-3">
+                    <p className={`text-2xl md:text-5xl font-black stat-number ${isTop3 ? 'text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-slate-500'}`}>{pts.toFixed(1)}</p>
+                    <p className="text-[7px] md:text-[9px] font-black text-slate-700 uppercase tracking-widest">Points</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
+
+    const StatMini = ({ label, value, color }) => (
+      <div className="text-center"><p className="text-slate-700 text-[6px] font-black uppercase tracking-tighter">{label}</p><p className={`${color} text-[10px] font-bold stat-number`}>{value}</p></div>
+    );
+
+    const ToggleButton = ({ active, onClick, label }) => (
+      <button onClick={onClick} className={`py-3 px-2 rounded-xl text-[7px] font-black tracking-widest transition-all border ${active ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-slate-900/50 border-white/5 text-slate-600 hover:text-slate-300'}`}>{label}</button>
+    );
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
