@@ -137,8 +137,8 @@
     // ================== KONFIGURASI SUPABASE ==================
     // Ganti dua nilai di bawah ini dengan URL & anon key project Supabase kamu.
     // Project Settings -> API -> Project URL & anon public key
-    const SUPABASE_URL = "https://qwwtawqidgwiabenkuwk.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3d3Rhd3FpZGd3aWFiZW5rdXdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MzkzOTUsImV4cCI6MjA5ODExNTM5NX0.Q05_kZrzbL7n4FRlVsYOKyh7xrQ2ykPfnMFi6LiLGvg";
+    const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
 
     const supabase = (SUPABASE_URL.includes("YOUR-PROJECT") || SUPABASE_ANON_KEY.includes("YOUR-ANON"))
       ? null
@@ -693,88 +693,121 @@
 
     const ArchiveModule = ({ data, attendanceData, onDeleteOT, onDeleteAtt }) => {
       const [view, setView] = useState('ot');
-      const [filterCycle, setFilterCycle] = useState('current');
+      const [openCycle, setOpenCycle] = useState(null); // periode lama yang sedang dibuka (null = semua tertutup)
 
       const currentCycleID = useMemo(() => getActiveCycle(new Date().toISOString().split('T')[0]), []);
 
-      const allCycles = useMemo(() => {
-          const cycles = new Set();
-          data.forEach(d => cycles.add(getActiveCycle(d.date)));
-          attendanceData.forEach(d => cycles.add(getActiveCycle(d.date)));
-          return Array.from(cycles).sort().reverse();
-      }, [data, attendanceData]);
+      // Kelompokkan data per periode, urut dari terbaru ke terlama
+      const groupedByCycle = useMemo(() => {
+        const list = view === 'ot' ? data : attendanceData;
+        const groups = {};
+        list.forEach(item => {
+          const c = getActiveCycle(item.date);
+          if (!groups[c]) groups[c] = [];
+          groups[c].push(item);
+        });
+        Object.values(groups).forEach(arr => arr.sort((a, b) => new Date(b.date) - new Date(a.date)));
+        return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+      }, [view, data, attendanceData]);
 
-      const effectiveCycle = filterCycle === 'current' ? currentCycleID : filterCycle;
+      const pastCycles = groupedByCycle.filter(([c]) => c !== currentCycleID);
+      const currentCycleData = groupedByCycle.find(([c]) => c === currentCycleID);
 
-      const displayData = useMemo(() => {
-          let list = view === 'ot' ? data : attendanceData;
-          if (filterCycle !== 'all') {
-              list = list.filter(d => getActiveCycle(d.date) === effectiveCycle);
-          }
-          return [...list].sort((a,b) => new Date(b.date) - new Date(a.date));
-      }, [view, filterCycle, effectiveCycle, data, attendanceData]);
+      const renderItem = (item) => (
+        <div key={item.id} className="glass-card p-4 md:p-6 rounded-2xl flex flex-col sm:flex-row justify-between sm:items-center gap-4 group hover:border-white/20 transition-all">
+          <div className="flex gap-5 md:gap-10 items-center">
+            <div className="flex flex-col text-center border-r border-white/5 pr-4 md:pr-8 min-w-[80px] md:min-w-[100px]">
+              <span className="text-[9px] md:text-[10px] font-black text-white italic">{item.date}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-white italic text-base md:text-lg leading-none">{item.name}</span>
+              {view === 'ot' && <span className="text-[8px] text-slate-500 uppercase font-black mt-1">{item.workLabel}</span>}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 md:gap-12">
+            {view === 'ot' ? (
+              <div className="flex gap-6 md:gap-12 text-center items-center">
+                <StatMini label="Istirahat" value={`${item.breakTime}m`} color="text-slate-500" />
+                <StatMini label="Lembur" value={`${item.otHours}j`} color="text-emerald-400" />
+                <StatMini label="Poin" value={item.points} color="text-amber-500" />
+                <button onClick={() => onDeleteOT(item.id)} className="text-rose-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 ml-2 md:ml-4 transition-all">✕</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4 md:gap-8">
+                <span className={`text-[9px] font-black uppercase px-4 py-1 rounded-full border ${item.status === 'Hadir' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5' : 'text-rose-500 border-rose-500/20 bg-rose-500/5'}`}>{item.status}</span>
+                <button onClick={() => onDeleteAtt(item.id)} className="text-rose-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">✕</button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
 
       return (
         <div className="max-w-5xl mx-auto space-y-6 md:space-y-10">
-           <header className="border-b border-white/5 pb-5 md:pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-            <div>
+           <header className="border-b border-white/5 pb-5 md:pb-8">
                 <h2 className="luxury-heading text-2xl md:text-4xl text-white font-light tracking-[0.2em] md:tracking-[0.4em]">Arsip Data</h2>
-                <p className="text-slate-500 text-[9px] md:text-[10px] font-bold uppercase mt-2 tracking-widest italic">Rekaman permanen tiap periode 16 – 15</p>
-            </div>
-            <div className="flex flex-col gap-1 w-full md:w-auto">
-                <span className="text-[7px] font-black text-slate-700 uppercase tracking-widest">Filter Periode:</span>
-                <select value={filterCycle} onChange={e => setFilterCycle(e.target.value)} className="premium-input px-5 md:px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none border-blue-500/20 w-full md:w-auto">
-                    <option value="all">Semua Periode</option>
-                    <option value="current">Periode Berjalan ({cycleLabel(currentCycleID)})</option>
-                    {allCycles.map(c => <option key={c} value={c}>{cycleLabel(c)}</option>)}
-                </select>
-            </div>
+                <p className="text-slate-500 text-[9px] md:text-[10px] font-bold uppercase mt-2 tracking-widest italic">Periode lama tersimpan rapi dalam folder</p>
           </header>
 
           <div className="flex gap-3 md:gap-4 border-b border-white/5 pb-5 md:pb-6 overflow-x-auto">
             <button onClick={() => setView('ot')} className={`px-6 md:px-10 py-3 md:py-4 rounded-xl font-black text-[8px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all border whitespace-nowrap ${view === 'ot' ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-transparent border-transparent text-slate-600 hover:text-white'}`}>Data Lembur</button>
             <button onClick={() => setView('att')} className={`px-6 md:px-10 py-3 md:py-4 rounded-xl font-black text-[8px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all border whitespace-nowrap ${view === 'att' ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-transparent border-transparent text-slate-600 hover:text-white'}`}>Data Presensi</button>
           </div>
-          
-          <div className="space-y-3">
-            {displayData.map(item => (
-              <div key={item.id} className="glass-card p-4 md:p-6 rounded-2xl flex flex-col sm:flex-row justify-between sm:items-center gap-4 group hover:border-white/20 transition-all">
-                <div className="flex gap-5 md:gap-10 items-center">
-                  <div className="flex flex-col text-center border-r border-white/5 pr-4 md:pr-8 min-w-[80px] md:min-w-[100px]">
-                    <span className="text-[9px] md:text-[10px] font-black text-white italic">{item.date}</span>
-                    <span className="text-[6px] md:text-[7px] text-blue-500 font-black uppercase mt-1">{cycleLabel(getActiveCycle(item.date))}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-white italic text-base md:text-lg leading-none">{item.name}</span>
-                    {view === 'ot' && <span className="text-[8px] text-slate-500 uppercase font-black mt-1">{item.workLabel}</span>}
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-6 md:gap-12">
-                    {view === 'ot' ? (
-                        <div className="flex gap-6 md:gap-12 text-center items-center">
-                            <StatMini label="Istirahat" value={`${item.breakTime}m`} color="text-slate-500" />
-                            <StatMini label="Lembur" value={`${item.otHours}j`} color="text-emerald-400" />
-                            <StatMini label="Poin" value={item.points} color="text-amber-500" />
-                            <button onClick={() => onDeleteOT(item.id)} className="text-rose-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 ml-2 md:ml-4 transition-all">✕</button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-4 md:gap-8">
-                            <span className={`text-[9px] font-black uppercase px-4 py-1 rounded-full border ${item.status === 'Hadir' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5' : 'text-rose-500 border-rose-500/20 bg-rose-500/5'}`}>{item.status}</span>
-                            <button onClick={() => onDeleteAtt(item.id)} className="text-rose-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">✕</button>
-                        </div>
-                    )}
+          {/* Periode berjalan: langsung terbuka */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]"></span>
+              <p className="text-[8px] md:text-[9px] font-black uppercase text-emerald-400 tracking-[0.2em]">Periode Berjalan · {cycleLabel(currentCycleID)}</p>
+            </div>
+            <div className="space-y-3">
+              {currentCycleData ? currentCycleData[1].map(renderItem) : (
+                <div className="py-10 text-center opacity-20">
+                  <p className="text-[8px] font-black uppercase">Belum ada data di periode ini</p>
                 </div>
-              </div>
-            ))}
-
-            {displayData.length === 0 && (
-                <div className="py-20 text-center opacity-20">
-                    <p className="luxury-heading text-xl">Arsip Kosong</p>
-                    <p className="text-[8px] font-black uppercase mt-4">Belum ada data terekam untuk kriteria ini</p>
-                </div>
-            )}
+              )}
+            </div>
           </div>
+
+          {/* Periode lalu: model folder, tertutup default */}
+          {pastCycles.length > 0 && (
+            <div className="space-y-3 pt-4 md:pt-6 border-t border-white/5">
+              <p className="text-[8px] md:text-[9px] font-black uppercase text-slate-600 tracking-[0.2em] mb-2">Arsip Periode Sebelumnya</p>
+              {pastCycles.map(([cycleID, items]) => {
+                const isOpen = openCycle === cycleID;
+                return (
+                  <div key={cycleID} className="glass-card rounded-2xl overflow-hidden border-white/5">
+                    <button
+                      onClick={() => setOpenCycle(isOpen ? null : cycleID)}
+                      className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-white/[0.02] transition-all"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-xl md:text-2xl">📁</span>
+                        <div className="text-left">
+                          <p className="font-bold text-white italic text-sm md:text-base">{cycleLabel(cycleID)}</p>
+                          <p className="text-[7px] md:text-[8px] font-black text-slate-600 uppercase tracking-widest mt-0.5">{items.length} entri</p>
+                        </div>
+                      </div>
+                      <span className={`text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>▾</span>
+                    </button>
+                    {isOpen && (
+                      <div className="p-4 md:p-6 pt-0 space-y-3">
+                        {items.map(renderItem)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {groupedByCycle.length === 0 && (
+              <div className="py-20 text-center opacity-20">
+                  <p className="luxury-heading text-xl">Arsip Kosong</p>
+                  <p className="text-[8px] font-black uppercase mt-4">Belum ada data terekam</p>
+              </div>
+          )}
         </div>
       );
     };
